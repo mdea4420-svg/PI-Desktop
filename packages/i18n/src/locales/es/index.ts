@@ -2143,7 +2143,7 @@ sklm: {
       "provider.register": "Agregue los proveedores que define este complemento a la lista de proveedores de Configuración. El complemento aporta el punto final y los modelos; su clave API permanece en PI-Desktop.",
       "desktop.control": "Permite invocar el catálogo de control de PI-Desktop revisado; las operaciones destructivas siguen requiriendo confirm=true y el token bearer de MCP no se expone.",
       "session.model.configure":
-        "Permite que este complemento cambie el modelo de cualquier sesión local tras esta autorización única. No puede cambiar el modo de la sesión, los permisos de herramientas ni el nivel de razonamiento. El modelo elegido puede recibir turnos posteriores y consumir su cuota del proveedor.",
+        "Permite que este complemento cambie el modelo y el nivel de razonamiento de cualquier sesión local tras esta autorización única. No puede cambiar el modo de la sesión ni los permisos de herramientas. El modelo elegido puede recibir turnos posteriores y consumir su cuota del proveedor.",
       "models.list": "Puede ver en qué modelos se ha registrado. No recibe llaves.",
       "session.read": "Puede leer la conversación en la que está operando la llamada de herramienta actual, incluidos los resultados de la herramienta.",
       "net.fetch": "Puede realizar solicitudes de red salientes.",

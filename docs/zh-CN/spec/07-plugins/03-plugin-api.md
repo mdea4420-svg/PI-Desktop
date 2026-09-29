@@ -648,15 +648,16 @@ Electron 通道名，插件也永远拿不到 MCP bearer token。调用复用控
 ```ts
 await pi.desktop.invoke({
   operation: "session/configureModel",
-  args: [sessionId, { providerId, modelId }],
+  args: [sessionId, { providerId, modelId, thinkingLevel: "high" }],
 })
 ```
 
-宿主只接受这些模型选择字段，且仅针对空闲会话：不会改动会话模式、思考档位或工具
-权限模式。该授权允许后续回合改用其他服务并消耗额度，且不再逐次弹出原生对话框；
-撤销授权后立即禁止后续调用。旧的 `session/configure` 仍属危险操作，仍需逐次原生
-确认。Electron 的可信渲染器拥有自己的会话配置 API；plugin-only 限制针对的是插件 /
-MCP 网关，而不是把 IPC 本身当作独立的授权边界。参见 ADR 0310。
+宿主只接受这些选择字段，且仅针对空闲会话：必需的 provider 与 model，以及可选的
+`thinkingLevel`（必须是宿主已公布的档位之一）。不会改动会话模式或工具权限模式。该
+授权允许后续回合改用其他服务并消耗额度，且不再逐次弹出原生对话框；撤销授权后立即
+禁止后续调用。旧的 `session/configure` 仍属危险操作，仍需逐次原生确认。Electron 的
+可信渲染器拥有自己的会话配置 API；plugin-only 限制针对的是插件 / MCP 网关，而不是
+把 IPC 本身当作独立的授权边界。参见 ADR 0310。
 
 `dangerous` 操作（删除会话、更改权限模式、批准工具）需要两次答复。
 `confirm: true` 是插件的知会，必须先给出（否则返回

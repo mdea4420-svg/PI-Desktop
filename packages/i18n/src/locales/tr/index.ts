@@ -2158,7 +2158,7 @@ importConfirm: "İçe aktarılan uzantılar ajan sürecinde, ajanın kendi araç
       "desktop.control":
         "Eklentinin incelenmiş PI-Desktop denetim kataloğunu çağırmasını sağlar. Yıkıcı işlemler yine confirm=true gerektirir; MCP bearer token eklentiye verilmez.",
       "session.model.configure":
-        "Bu tek seferlik izinden sonra eklentinin herhangi bir yerel oturumun modelini değiştirmesine izin verir. Oturum modunu, araç izinlerini veya düşünme düzeyini değiştiremez. Seçilen model sonraki turları alabilir ve servis kotanızı kullanabilir.",
+        "Bu tek seferlik izinden sonra eklentinin herhangi bir yerel oturumun modelini ve düşünme düzeyini değiştirmesine izin verir. Oturum modunu veya araç izinlerini değiştiremez. Seçilen model sonraki turları alabilir ve servis kotanızı kullanabilir.",
       "models.list": "Oturum açtığınız modelleri görebilir. Anahtar almaz.",
       "session.read":
         "Geçerli araç çağrısının üzerinde çalıştığı konuşmayı, araç sonuçları dahil, okuyabilir.",

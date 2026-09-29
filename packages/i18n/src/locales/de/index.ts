@@ -2143,7 +2143,7 @@ sklm: {
       "provider.register": "Fügt die Anbieter, die dieses Plugin definiert, zur Anbieterliste in den Einstellungen hinzu. Das Plugin liefert den Endpunkt und die Modelle; Ihr API-Schlüssel bleibt in PI-Desktop.",
       "desktop.control": "Erlaubt den Aufruf des geprüften PI-Desktop-Katalogs; destruktive Vorgänge benötigen weiterhin confirm=true, und das MCP-Bearer-Token wird nicht offengelegt.",
       "session.model.configure":
-        "Erlaubt diesem Plugin, nach dieser einmaligen Freigabe das Modell jeder lokalen Sitzung zu ändern. Es kann weder den Sitzungsmodus noch Werkzeugberechtigungen oder die Denkstufe ändern. Das gewählte Modell kann spätere Gesprächsrunden erhalten und Ihr Anbieterkontingent verbrauchen.",
+        "Erlaubt diesem Plugin, nach dieser einmaligen Freigabe das Modell und die Denkstufe jeder lokalen Sitzung zu ändern. Es kann weder den Sitzungsmodus noch Werkzeugberechtigungen ändern. Das gewählte Modell kann spätere Gesprächsrunden erhalten und Ihr Anbieterkontingent verbrauchen.",
       "models.list": "Kann sehen, für welche Modelle Sie sich angemeldet haben. Es erhält keine Schlüssel.",
       "session.read": "Kann die Konversation lesen, an der der aktuelle Tool-Aufruf arbeitet, einschließlich der Tool-Ergebnisse.",
       "net.fetch": "Kann ausgehende Netzwerkanfragen stellen.",

@@ -211,11 +211,11 @@ function loadSessionIpc(imports) {
 }
 
 /**
- * Load a dependency-free Electron main module the same way the session IPC
- * harness does, so the guard below registers a real dependency instead of a
- * permissive stub.
+ * Load an Electron main module with injected CommonJS dependencies the same way
+ * the session IPC harness does, so the guard below registers real dependencies
+ * instead of permissive stubs.
  */
-function loadMainModule(relative) {
+function loadMainModule(relative, imports = {}) {
   const file = new URL(`../electron/main/${relative}`, import.meta.url);
   const { outputText } = ts.transpileModule(readFileSync(file, "utf8"), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
@@ -224,7 +224,10 @@ function loadMainModule(relative) {
   const module = { exports: {} };
   new Function("require", "exports", "module", outputText)(
     (id) => {
-      throw new Error(`unexpected dependency in ${relative}: ${id}`);
+      if (!Object.hasOwn(imports, id)) {
+        throw new Error(`unexpected dependency in ${relative}: ${id}`);
+      }
+      return imports[id];
     },
     module.exports,
     module,
@@ -244,7 +247,9 @@ function forkHarness({ host, sidecar, activeTurns = new Map() }) {
     "../importers": { convertSession() {}, scanAllSources() {}, scanModelConfigs() {} },
     "../services/session-collaboration": { readSessionCollaboration() {} },
     "../services/session-search": { searchSessionsAcrossSources },
-    "../session-model-control": loadMainModule("session-model-control.ts"),
+    "../session-model-control": loadMainModule("session-model-control.ts", {
+      "@pi-desktop/shared": sharedForIpc,
+    }),
   });
   registerSessionIpc({
     registrar: { handle: (channel, handler) => handlers.set(channel, handler) },

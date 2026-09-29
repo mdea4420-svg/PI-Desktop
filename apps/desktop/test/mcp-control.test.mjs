@@ -49,7 +49,7 @@ test("the plugin and MCP paths share desktop operation validation", async () => 
   ]);
 });
 
-test("model selection is plugin-only and rejects every other configuration field", async () => {
+test("model selection is plugin-only and permits only the narrow selection", async () => {
   const calls = [];
   const channel = "pi-desktop/session/configureModel";
   const controller = createMcpControlController({
@@ -69,7 +69,9 @@ test("model selection is plugin-only and rejects every other configuration field
   for (const args of [
     ["s1", { providerId: "p", modelId: "m", permissionMode: "auto" }],
     ["s1", { providerId: "p", modelId: "m", mode: "agent" }],
-    ["s1", { providerId: "p", modelId: "m", thinkingLevel: "high" }],
+    ["s1", { providerId: "p", modelId: "m", thinkingLevel: "high", permissionMode: "auto" }],
+    ["s1", { providerId: "p", modelId: "m", thinkingLevel: "maximal" }],
+    ["s1", { providerId: "p", modelId: "m", thinkingLevel: 3 }],
     ["s1", { providerId: "p", modelId: "m" }, "extra"],
     ["", { providerId: "p", modelId: "m" }],
     ["s1", { providerId: "", modelId: "m" }],
@@ -79,6 +81,14 @@ test("model selection is plugin-only and rejects every other configuration field
   assert.deepEqual(calls, []);
   assert.deepEqual(await authorized(["s2", { providerId: "p", modelId: "m" }]), { session: { id: "s2" } });
   assert.deepEqual(calls, [{ name: channel, args: ["s2", { providerId: "p", modelId: "m" }] }]);
+  assert.deepEqual(
+    await authorized(["s2", { providerId: "p", modelId: "m", thinkingLevel: "low" }]),
+    { session: { id: "s2" } },
+  );
+  assert.deepEqual(calls, [
+    { name: channel, args: ["s2", { providerId: "p", modelId: "m" }] },
+    { name: channel, args: ["s2", { providerId: "p", modelId: "m", thinkingLevel: "low" }] },
+  ]);
   await assert.rejects(
     () => controller.invoke({ operation: "session/configure", args: ["s2", { mode: "agent" }] }),
     (error) => error.code === "CONFIRMATION_REQUIRED",

@@ -722,8 +722,10 @@ export function createMcpControlController(options: {
       }
       const sanitized = operation.id === "session/configureModel"
         ? (() => {
-            const { id, providerId, modelId } = parseSessionModelChange(args);
-            return [id, { providerId, modelId }];
+            const { id, providerId, modelId, thinkingLevel } = parseSessionModelChange(args);
+            return [id, thinkingLevel === undefined
+              ? { providerId, modelId }
+              : { providerId, modelId, thinkingLevel }];
           })()
         : args.map((value) => stripSecretMaterial(value)) as unknown[];
       const result = operation.channel === "internal:session-collaboration"

@@ -2173,7 +2173,7 @@ importConfirm: "Imported extensions run inside the agent process with the same a
       "desktop.control":
         "Lets the plugin invoke the reviewed PI-Desktop control catalog. Destructive operations still require confirm=true; the MCP bearer token is never exposed.",
       "session.model.configure":
-        "Lets this plugin change the model of any local session after this one-time grant. It cannot change session mode, tool permissions, or thinking level. The selected model may receive subsequent conversation turns and use your provider quota.",
+        "Lets this plugin change the model and thinking level of any local session after this one-time grant. It cannot change session mode or tool permissions. The selected model may receive subsequent conversation turns and use your provider quota.",
       "models.list": "Can see which models you have signed in for. It does not receive keys.",
       "session.read":
         "Can read the conversation the current tool call is operating on, including tool results.",

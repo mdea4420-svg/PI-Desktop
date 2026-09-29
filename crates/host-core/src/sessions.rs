@@ -1709,16 +1709,21 @@ pub fn fork_session_through(
     })))
 }
 
-/// Select a model atomically without reading and writing the session mode or
-/// permission mode. The existing Plan/turn gate still applies to a real change.
+/// Select a model and, when requested, the per-session thinking level in one
+/// host-owned update without reading and writing the session mode or permission
+/// mode. The existing Plan/turn gate still applies to a real change.
 pub fn configure_session_model(
     db: &Database,
     id: &str,
     provider_id: &str,
     model_id: &str,
+    thinking_level: Option<&str>,
 ) -> Result<Option<SessionSummary>> {
     if id.trim().is_empty() || provider_id.trim().is_empty() || model_id.trim().is_empty() {
         return Err(anyhow!("id, providerId and modelId must be non-empty"));
+    }
+    if let Some(level) = thinking_level {
+        validate_thinking_level(level)?;
     }
     let current_mode: Option<String> = db
         .conn()
@@ -1737,12 +1742,15 @@ pub fn configure_session_model(
         &mode,
         Some(provider_id),
         Some(model_id),
-        None,
+        thinking_level,
         None,
     )?;
     db.conn().execute(
-        "UPDATE sessions SET provider_id = ?2, model_id = ?3, updated_at = ?4 WHERE id = ?1",
-        params![id, provider_id, model_id, now_ms()],
+        "UPDATE sessions
+         SET provider_id = ?2, model_id = ?3,
+             thinking_level = COALESCE(?5, thinking_level), updated_at = ?4
+         WHERE id = ?1",
+        params![id, provider_id, model_id, now_ms(), thinking_level],
     )?;
     Ok(get_session(db, id)?.map(|detail| detail.summary))
 }
@@ -4320,7 +4328,7 @@ mod tests {
             Some("auto"),
         )
         .unwrap();
-        let selected = configure_session_model(&db, &session.id, "provider-1", "model-1")
+        let selected = configure_session_model(&db, &session.id, "provider-1", "model-1", None)
             .unwrap()
             .unwrap();
         assert_eq!(selected.provider_id.as_deref(), Some("provider-1"));
@@ -4328,12 +4336,27 @@ mod tests {
         assert_eq!(selected.mode, "goal");
         assert_eq!(selected.thinking_level, "high");
         assert_eq!(selected.permission_mode, "auto");
+        // A requested level is applied by the same host-owned update, and the
+        // modal configuration still survives it untouched.
+        let retuned =
+            configure_session_model(&db, &session.id, "provider-2", "model-2", Some("low"))
+                .unwrap()
+                .unwrap();
+        assert_eq!(retuned.provider_id.as_deref(), Some("provider-2"));
+        assert_eq!(retuned.model_id.as_deref(), Some("model-2"));
+        assert_eq!(retuned.thinking_level, "low");
+        assert_eq!(retuned.mode, "goal");
+        assert_eq!(retuned.permission_mode, "auto");
         assert!(
-            configure_session_model(&db, "missing", "provider-1", "model-1")
+            configure_session_model(&db, &session.id, "provider-3", "model-3", Some("maximal"))
+                .is_err()
+        );
+        assert!(
+            configure_session_model(&db, "missing", "provider-1", "model-1", None)
                 .unwrap()
                 .is_none()
         );
-        assert!(configure_session_model(&db, &session.id, "", "model-1").is_err());
+        assert!(configure_session_model(&db, &session.id, "", "model-1", None).is_err());
     }
 
     #[test]

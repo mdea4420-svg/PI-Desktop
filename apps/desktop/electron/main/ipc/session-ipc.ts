@@ -561,12 +561,14 @@ export function registerSessionIpc({
     },
   );
   handle(IPC.invoke.sessionConfigureModel, async (...args: unknown[]) => {
-    const { id, providerId, modelId } = parseSessionModelChange(args);
+    const { id, providerId, modelId, thinkingLevel } = parseSessionModelChange(args);
     rejectNativeMutation(id, "model selection");
     if (!host) throw new Error("host unavailable");
     const result = await host.call<{ session?: RuntimeSession | null }>(
       "session.configureModel",
-      { id, providerId, modelId },
+      thinkingLevel === undefined
+        ? { id, providerId, modelId }
+        : { id, providerId, modelId, thinkingLevel },
     );
     if (!result.session) return result;
     const { providers, defaults } = await sessionCapabilityContext();

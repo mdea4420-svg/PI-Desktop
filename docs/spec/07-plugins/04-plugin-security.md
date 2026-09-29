@@ -24,11 +24,12 @@ Main risks:
 - Host API not on the allowlist = does not exist
 - `pi.browser.cdp` methods not on the CDP allowlist = `PERMISSION_DENIED` (no
   cookies, storage, Target, or Fetch; no DevTools websocket)
-- Model-only session selection is a separately approved high-risk capability
-  (`session.model.configure`) in addition to `desktop.control`. The new grant
-  never lifts native consent for the broader `session/configure` operation.
-  Every model-only layer rejects fields that could change the operating mode,
-  thinking level, or tool permission mode (ADR 0310).
+- Model and thinking-level session selection is a separately approved high-risk
+  capability (`session.model.configure`) in addition to `desktop.control`. The
+  new grant never lifts native consent for the broader `session/configure`
+  operation. Every selection layer rejects fields that could change the
+  operating mode or the tool permission mode, and a requested thinking level
+  must be one of the host's published values (ADR 0310).
 
 ## 3. Isolation strategy
 

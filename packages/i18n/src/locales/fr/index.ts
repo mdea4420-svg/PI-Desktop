@@ -2143,7 +2143,7 @@ sklm: {
       "provider.register": "Ajoute les fournisseurs définis par ce plugin à la liste des fournisseurs des Paramètres. Le plugin fournit le point de terminaison et les modèles ; votre clé API reste dans PI-Desktop.",
       "desktop.control": "Permet d'appeler le catalogue PI-Desktop contrôlé ; les opérations destructrices exigent toujours confirm=true et le bearer token MCP n'est pas exposé.",
       "session.model.configure":
-        "Permet à ce plugin de changer le modèle de n'importe quelle session locale après cette autorisation unique. Il ne peut modifier ni le mode de session, ni les autorisations d'outils, ni le niveau de réflexion. Le modèle choisi peut recevoir les tours suivants et consommer votre quota de fournisseur.",
+        "Permet à ce plugin de changer le modèle et le niveau de réflexion de n'importe quelle session locale après cette autorisation unique. Il ne peut modifier ni le mode de session ni les autorisations d'outils. Le modèle choisi peut recevoir les tours suivants et consommer votre quota de fournisseur.",
       "models.list": "Peut voir pour quels modèles vous vous êtes connecté. Il ne reçoit pas de clés.",
       "session.read": "Peut lire la conversation sur laquelle l'appel d'outil actuel fonctionne, y compris les résultats de l'outil.",
       "net.fetch": "Peut effectuer des requêtes réseau sortantes.",

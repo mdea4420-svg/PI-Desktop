@@ -12883,7 +12883,7 @@ are withdrawn with ADR 0165.
   `dangling_symlink_inside_workspace_resolves_to_its_target`,
   `dangling_symlink_loop_is_rejected`)
 
-#### E2E-236A: Preauthorized plugin model selection stays model-only
+#### E2E-236A: Preauthorized plugin model and thinking-level selection stays model-only
 
 - **Preconditions:** A compatible candidate host in an isolated profile, two
   idle local sessions with different modes and an enabled configured model; a
@@ -12891,17 +12891,19 @@ are withdrawn with ADR 0165.
   latter initially not approved. No live provider call is needed.
 - **Steps:** Attempt `session/configureModel` before approval; approve the new
   permission in plugin review; select a different configured model for the
-  second session; read both sessions and the model-change event. Attempt a
-  nonexistent model and payloads containing `permissionMode`, `mode`, or
-  `thinkingLevel`; revoke the grant and retry. Separately call legacy
-  `session/configure` with `confirm: true` and deny its native prompt.
+  second session; change its thinking level through the same operation; read
+  both sessions and the model-change event. Attempt a nonexistent model, an
+  unpublished thinking level, and payloads containing `permissionMode` or
+  `mode`; revoke the grant and retry. Separately call legacy `session/configure`
+  with `confirm: true` and deny its native prompt.
 - **Expected:** Before approval and after revocation, model-only calls fail.
-  Approval allows the selected session's model to change without a per-call
-  native prompt, while the other session, both permission modes, modes and
-  thinking levels remain unchanged. Invalid or widened requests do not write.
-  Legacy `session/configure` still prompts and denial writes nothing. An older
-  installed host remains unsupported; browser/mobile acceptance additionally
-  requires remote takeover and a compatible deployed host.
+  Approval lets the selected session's model and thinking level change without
+  a per-call native prompt, while the other session, both permission modes, the
+  modes, and the other session's thinking level remain unchanged. Invalid or
+  widened requests do not write. Legacy `session/configure` still prompts and
+  denial writes nothing. An older installed host remains unsupported;
+  browser/mobile acceptance additionally requires remote takeover and a
+  compatible deployed host.
 - **Coverage:** `plugin-desktop-control.test.mjs`, `mcp-control.test.mjs`,
   host-core model RPC/session tests, and isolated headless host RPC checks
   (`scripts/e2e-session-model-control.mjs`, run in Windows CI). Plugin grant,

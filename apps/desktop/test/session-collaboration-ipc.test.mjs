@@ -27,7 +27,9 @@ const collaboration = load("../electron/main/services/session-collaboration.ts",
   "../agent-host-bridge": {},
   "../plugin-agent-complete": {},
 });
-const sessionModelControl = load("../electron/main/session-model-control.ts", {});
+const sessionModelControl = load("../electron/main/session-model-control.ts", {
+  "@pi-desktop/shared": await import("@pi-desktop/shared"),
+});
 const { registerSessionIpc } = load("../electron/main/ipc/session-ipc.ts", {
   electron: { shell: {} },
   "node:fs": fs,
