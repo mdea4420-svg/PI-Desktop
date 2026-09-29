@@ -6708,30 +6708,53 @@ mod tests {
         let data_dir = tempfile::tempdir().unwrap();
         let mut app_state = AppState::open(data_dir.path()).unwrap();
         app_state.handshook = true;
-        let session = sessions::create_session(
-            &app_state.db, None, None, None, None, None,
-        ).unwrap();
+        let session =
+            sessions::create_session(&app_state.db, None, None, None, None, None).unwrap();
         let state = Arc::new(Mutex::new(app_state));
         let (tx, _rx) = mpsc::unbounded_channel();
         let provider_id = create_test_provider(state.clone(), tx.clone()).await;
-        for extra in [json!({"permissionMode": "auto"}), json!({"mode": "goal"}), json!({"thinkingLevel": "high"})] {
-            let mut input = json!({"id": session.id, "providerId": provider_id, "modelId": "gpt-image-2.5"});
-            input.as_object_mut().unwrap().extend(extra.as_object().unwrap().clone());
+        for extra in [
+            json!({"permissionMode": "auto"}),
+            json!({"mode": "goal"}),
+            json!({"thinkingLevel": "high"}),
+        ] {
+            let mut input =
+                json!({"id": session.id, "providerId": provider_id, "modelId": "gpt-image-2.5"});
+            input
+                .as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
             let error = handle_request(state.clone(), "session.configureModel", input, tx.clone())
-                .await.unwrap_err();
+                .await
+                .unwrap_err();
             assert_eq!(error.data.unwrap()["errorCode"], "INVALID_PARAMS");
         }
-        let invalid = handle_request(state.clone(), "session.configureModel",
-            json!({"id": session.id, "providerId": provider_id, "modelId": "not-bound"}), tx.clone())
-            .await.unwrap_err();
+        let invalid = handle_request(
+            state.clone(),
+            "session.configureModel",
+            json!({"id": session.id, "providerId": provider_id, "modelId": "not-bound"}),
+            tx.clone(),
+        )
+        .await
+        .unwrap_err();
         assert_eq!(invalid.data.unwrap()["errorCode"], "INVALID_PARAMS");
-        let missing = handle_request(state.clone(), "session.configureModel",
-            json!({"id": "missing", "providerId": provider_id, "modelId": "gpt-image-2.5"}), tx.clone())
-            .await.unwrap_err();
+        let missing = handle_request(
+            state.clone(),
+            "session.configureModel",
+            json!({"id": "missing", "providerId": provider_id, "modelId": "gpt-image-2.5"}),
+            tx.clone(),
+        )
+        .await
+        .unwrap_err();
         assert_eq!(missing.data.unwrap()["errorCode"], "NOT_FOUND");
-        let selected = handle_request(state, "session.configureModel",
-            json!({"id": session.id, "providerId": provider_id, "modelId": "gpt-image-2.5"}), tx)
-            .await.unwrap();
+        let selected = handle_request(
+            state,
+            "session.configureModel",
+            json!({"id": session.id, "providerId": provider_id, "modelId": "gpt-image-2.5"}),
+            tx,
+        )
+        .await
+        .unwrap();
         assert_eq!(selected["session"]["modelId"], "gpt-image-2.5");
         assert_eq!(selected["session"]["permissionMode"], "inherit");
     }

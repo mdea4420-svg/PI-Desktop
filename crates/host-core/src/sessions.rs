@@ -4311,17 +4311,28 @@ mod tests {
         let db = test_db();
         let session = create_session(&db, None, None, None, None, Some("/tmp/x".into())).unwrap();
         configure_session_with_thinking(
-            &db, &session.id, "goal", None, None, Some("high"), Some("auto"),
-        ).unwrap();
+            &db,
+            &session.id,
+            "goal",
+            None,
+            None,
+            Some("high"),
+            Some("auto"),
+        )
+        .unwrap();
         let selected = configure_session_model(&db, &session.id, "provider-1", "model-1")
-            .unwrap().unwrap();
+            .unwrap()
+            .unwrap();
         assert_eq!(selected.provider_id.as_deref(), Some("provider-1"));
         assert_eq!(selected.model_id.as_deref(), Some("model-1"));
         assert_eq!(selected.mode, "goal");
         assert_eq!(selected.thinking_level, "high");
         assert_eq!(selected.permission_mode, "auto");
-        assert!(configure_session_model(&db, "missing", "provider-1", "model-1")
-            .unwrap().is_none());
+        assert!(
+            configure_session_model(&db, "missing", "provider-1", "model-1")
+                .unwrap()
+                .is_none()
+        );
         assert!(configure_session_model(&db, &session.id, "", "model-1").is_err());
     }
 
