@@ -1709,6 +1709,44 @@ pub fn fork_session_through(
     })))
 }
 
+/// Select a model atomically without reading and writing the session mode or
+/// permission mode. The existing Plan/turn gate still applies to a real change.
+pub fn configure_session_model(
+    db: &Database,
+    id: &str,
+    provider_id: &str,
+    model_id: &str,
+) -> Result<Option<SessionSummary>> {
+    if id.trim().is_empty() || provider_id.trim().is_empty() || model_id.trim().is_empty() {
+        return Err(anyhow!("id, providerId and modelId must be non-empty"));
+    }
+    let current_mode: Option<String> = db
+        .conn()
+        .query_row(
+            "SELECT mode FROM sessions WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .optional()?;
+    let Some(mode) = current_mode else {
+        return Ok(None);
+    };
+    crate::plans::gate_session_configure(
+        db,
+        id,
+        &mode,
+        Some(provider_id),
+        Some(model_id),
+        None,
+        None,
+    )?;
+    db.conn().execute(
+        "UPDATE sessions SET provider_id = ?2, model_id = ?3, updated_at = ?4 WHERE id = ?1",
+        params![id, provider_id, model_id, now_ms()],
+    )?;
+    Ok(get_session(db, id)?.map(|detail| detail.summary))
+}
+
 /// Backwards-compatible configurator.  Omitting the thinking level preserves
 /// the current persisted value.
 #[allow(dead_code)]
@@ -4266,6 +4304,25 @@ mod tests {
         .unwrap()
         .unwrap();
         assert_eq!(omitted.thinking_level, "omit");
+    }
+
+    #[test]
+    fn configure_session_model_preserves_non_model_configuration() {
+        let db = test_db();
+        let session = create_session(&db, None, None, None, None, Some("/tmp/x".into())).unwrap();
+        configure_session_with_thinking(
+            &db, &session.id, "goal", None, None, Some("high"), Some("auto"),
+        ).unwrap();
+        let selected = configure_session_model(&db, &session.id, "provider-1", "model-1")
+            .unwrap().unwrap();
+        assert_eq!(selected.provider_id.as_deref(), Some("provider-1"));
+        assert_eq!(selected.model_id.as_deref(), Some("model-1"));
+        assert_eq!(selected.mode, "goal");
+        assert_eq!(selected.thinking_level, "high");
+        assert_eq!(selected.permission_mode, "auto");
+        assert!(configure_session_model(&db, "missing", "provider-1", "model-1")
+            .unwrap().is_none());
+        assert!(configure_session_model(&db, &session.id, "", "model-1").is_err());
     }
 
     #[test]

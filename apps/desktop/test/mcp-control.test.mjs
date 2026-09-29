@@ -49,6 +49,42 @@ test("the plugin and MCP paths share desktop operation validation", async () => 
   ]);
 });
 
+test("model selection is plugin-only and rejects every other configuration field", async () => {
+  const calls = [];
+  const channel = "pi-desktop/session/configureModel";
+  const controller = createMcpControlController({
+    channels: { sessionConfigureModel: channel, sessionConfigure: "pi-desktop/session/configure" },
+    invoke: async (name, args) => { calls.push({ name, args }); return { session: { id: args[0] } }; },
+  });
+  assert.equal(controller.operations.find((op) => op.id === "session/configureModel")?.pluginOnly, true);
+  for (const input of [
+    { operation: "session/configureModel", args: ["s1", { providerId: "p", modelId: "m" }] },
+    { operation: "session/configureModel", source: "plugin", args: ["s1", { providerId: "p", modelId: "m" }] },
+  ]) {
+    await assert.rejects(() => controller.invoke(input), (error) => error.code === "PERMISSION_DENIED");
+  }
+  const authorized = (args) => controller.invoke({
+    operation: "session/configureModel", source: "plugin", pluginContext: { pluginId: "demo" }, args,
+  });
+  for (const args of [
+    ["s1", { providerId: "p", modelId: "m", permissionMode: "auto" }],
+    ["s1", { providerId: "p", modelId: "m", mode: "agent" }],
+    ["s1", { providerId: "p", modelId: "m", thinkingLevel: "high" }],
+    ["s1", { providerId: "p", modelId: "m" }, "extra"],
+    ["", { providerId: "p", modelId: "m" }],
+    ["s1", { providerId: "", modelId: "m" }],
+  ]) {
+    await assert.rejects(() => authorized(args), (error) => error.code === "INVALID_PARAMS");
+  }
+  assert.deepEqual(calls, []);
+  assert.deepEqual(await authorized(["s2", { providerId: "p", modelId: "m" }]), { session: { id: "s2" } });
+  assert.deepEqual(calls, [{ name: channel, args: ["s2", { providerId: "p", modelId: "m" }] }]);
+  await assert.rejects(
+    () => controller.invoke({ operation: "session/configure", args: ["s2", { mode: "agent" }] }),
+    (error) => error.code === "CONFIRMATION_REQUIRED",
+  );
+});
+
 async function post(url, token, body, headers = {}) {
   const response = await fetch(url, {
     method: "POST",
