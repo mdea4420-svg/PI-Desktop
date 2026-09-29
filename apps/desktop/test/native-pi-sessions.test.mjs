@@ -210,6 +210,28 @@ function loadSessionIpc(imports) {
   return module.exports;
 }
 
+/**
+ * Load a dependency-free Electron main module the same way the session IPC
+ * harness does, so the guard below registers a real dependency instead of a
+ * permissive stub.
+ */
+function loadMainModule(relative) {
+  const file = new URL(`../electron/main/${relative}`, import.meta.url);
+  const { outputText } = ts.transpileModule(readFileSync(file, "utf8"), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+    fileName: file.pathname,
+  });
+  const module = { exports: {} };
+  new Function("require", "exports", "module", outputText)(
+    (id) => {
+      throw new Error(`unexpected dependency in ${relative}: ${id}`);
+    },
+    module.exports,
+    module,
+  );
+  return module.exports;
+}
+
 function forkHarness({ host, sidecar, activeTurns = new Map() }) {
   const handlers = new Map();
   const hostCalls = [];
@@ -222,6 +244,7 @@ function forkHarness({ host, sidecar, activeTurns = new Map() }) {
     "../importers": { convertSession() {}, scanAllSources() {}, scanModelConfigs() {} },
     "../services/session-collaboration": { readSessionCollaboration() {} },
     "../services/session-search": { searchSessionsAcrossSources },
+    "../session-model-control": loadMainModule("session-model-control.ts"),
   });
   registerSessionIpc({
     registrar: { handle: (channel, handler) => handlers.set(channel, handler) },
