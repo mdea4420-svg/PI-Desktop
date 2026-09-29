@@ -4347,10 +4347,14 @@ mod tests {
         assert_eq!(retuned.thinking_level, "low");
         assert_eq!(retuned.mode, "goal");
         assert_eq!(retuned.permission_mode, "auto");
-        assert!(
-            configure_session_model(&db, &session.id, "provider-3", "model-3", Some("maximal"))
-                .is_err()
-        );
+        assert!(configure_session_model(
+            &db,
+            &session.id,
+            "provider-3",
+            "model-3",
+            Some("maximal")
+        )
+        .is_err());
         assert!(
             configure_session_model(&db, "missing", "provider-1", "model-1", None)
                 .unwrap()
